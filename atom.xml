@@ -4,7 +4,7 @@
   <title><![CDATA[My Blog]]></title>
   <link href="http://lvwangbeta.github.com/atom.xml" rel="self"/>
   <link href="http://lvwangbeta.github.com/"/>
-  <updated>2012-12-01T23:56:37+08:00</updated>
+  <updated>2012-12-29T13:55:26+08:00</updated>
   <id>http://lvwangbeta.github.com/</id>
   <author>
     <name><![CDATA[lvwang]]></name>
@@ -12,6 +12,66 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[MailFilter]]></title>
+    <link href="http://lvwangbeta.github.com/blog/2012/12/29/mailfilter/"/>
+    <updated>2012-12-29T13:50:00+08:00</updated>
+    <id>http://lvwangbeta.github.com/blog/2012/12/29/mailfilter</id>
+    <content type="html"><![CDATA[<h1>mailFilter V1.1</h1>
+
+<h3>原理简介</h3>
+
+<p>基于贝叶斯推断的垃圾邮件过滤器。通过8000封正常邮件和8000封垃圾邮件“训练”过滤器:
+解析所有邮件，提取每一个词,然后，计算每个词语在正常邮件和垃圾邮件中的出现频率。</p>
+
+<ol>
+<li><p>当收到一封未知邮件时，在不知道的前提下，我们假定它是垃圾邮件和正常邮件的概率各
+为50%，p(s) = p(n) = 50%</p></li>
+<li><p>解析该邮件，提取每个词，计算该词的p(s|w)，也就是受该词影响，该邮件是垃圾邮件的概率</p>
+
+<pre><code>             p(sw)             p(w|s)p(s)
+ p(s|w) = -----------  =   ----------------------
+             p(w)        p(s)p(w|s) + p(n)p(w|n)
+</code></pre></li>
+<li><p>提取该邮件中p(s|w)最高的15个词，计算联合概率。</p>
+
+<pre><code>             p(s|w1)p(s|w2)...p(s|w15)
+ p = ---------------------------------------------------------------
+     p(s|w1)p(s|w2)...p(s|w15) + (1-p(s|w1))(1-p(s|w2)...(1-p(s|w15)))           
+</code></pre></li>
+<li><p>设定阈值 p > 0.9 :垃圾邮件</p>
+
+<pre><code>     p &lt; 0.9 :正常邮件  
+</code></pre></li>
+</ol>
+
+
+<blockquote><p>注:如果新收到的邮件中有的词在史料库中还没出现过，就假定p(s|w) = 0.4</p></blockquote>
+
+<h3>使用</h3>
+
+<ol>
+<li>解压data.rar到当前文件夹</li>
+<li><p>启动一个终端，模拟邮件服务器</p>
+
+<pre><code> cd mailFilter
+ python server.py
+</code></pre></li>
+<li><p>等到出现 &#8220;Waiting for clients&#8230;&#8221;，启动另一终端，模拟邮件发送端</p>
+
+<pre><code> cd mailFilter
+ python client.py emaillocation
+</code></pre></li>
+</ol>
+
+
+<h3>参考资料</h3>
+
+<p><a href="http://www.ruanyifeng.com/blog/2011/08/bayesian_inference_part_two.html">http://www.ruanyifeng.com/blog/2011/08/bayesian_inference_part_two.html</a><br/>
+<a href="http://en.wikipedia.org/wiki/Bayesian_spam_filtering">http://en.wikipedia.org/wiki/Bayesian_spam_filtering</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[My first post]]></title>

@@ -3,7 +3,7 @@
 # ----------------------- #
 
 url: http://lvwangbeta.github.com
-title: My Blog
+title: Nerd's Blog
 subtitle: Open Share Freedom
 author: lvwang
 simple_search: http://google.com/lvwangbeta
@@ -98,4 +98,3 @@ google_analytics_tracking_id:
 # Facebook Like
 facebook_like: false
 
-weibo_share: true

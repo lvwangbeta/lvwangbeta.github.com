@@ -4,7 +4,7 @@
   <title><![CDATA[Nerd's Blog]]></title>
   <link href="http://lvwangbeta.github.com/atom.xml" rel="self"/>
   <link href="http://lvwangbeta.github.com/"/>
-  <updated>2012-12-29T15:00:11+08:00</updated>
+  <updated>2012-12-30T23:20:20+08:00</updated>
   <id>http://lvwangbeta.github.com/</id>
   <author>
     <name><![CDATA[lvwang]]></name>
@@ -14,18 +14,166 @@
 
   
   <entry>
-    <title type="html"><![CDATA[MailFilter]]></title>
-    <link href="http://lvwangbeta.github.com/blog/2012/12/29/mailfilter/"/>
-    <updated>2012-12-29T13:50:00+08:00</updated>
-    <id>http://lvwangbeta.github.com/blog/2012/12/29/mailfilter</id>
-    <content type="html"><![CDATA[<h1>mailFilter V1.1</h1>
+    <title type="html"><![CDATA[垃圾邮件过滤器 Python简单实现]]></title>
+    <link href="http://lvwangbeta.github.com/blog/2012/12/30/mailfilter/"/>
+    <updated>2012-12-30T23:17:00+08:00</updated>
+    <id>http://lvwangbeta.github.com/blog/2012/12/30/mailfilter</id>
+    <content type="html"><![CDATA[<p>  前一段时间用Python写了一个简单的垃圾邮件过滤器，感觉还蛮有意思的，顺便学习一点Python今天做了一点改进,
+刚刚升级到1.2版本。项目地址在<a href="http://github.com/lvwangbeta/mailFilter.git">mailFilter</a> http://github.com/lvwangbeta/mailFilter.git。</p>
 
-<h3>原理简介</h3>
+<p>我想趁2012年还没结束，而且也快考试啦，发篇博文简单介绍一下，主要用到的知识还是 list
+dic 这些最基本的数据结构，再加上一点儿概率统计。</p>
 
-<p>基于贝叶斯推断的垃圾邮件过滤器。通过8000封正常邮件和8000封垃圾邮件“训练”过滤器:
-解析所有邮件，提取每一个词,然后，计算每个词语在正常邮件和垃圾邮件中的出现频率。</p>
+<p>好了，还没说怎么个邮件过滤法呢&#8230;</p>
+
+<p>它不同于以往的基于关键字和IP阻挡等方法，而是基于贝叶斯推断，也就是条件概率，如果你学过概率论或看过
+吴军的数学之美，应该对此概念不陌生，也就是说通过邮件史料库来推断一封新收到的邮件是否为垃圾邮件，我第一次
+看到这个想法就比较好奇，真有那么准吗，干脆写一个试试吧。其实，我也是前些日子逛阮一峰的博客看到的，然后
+自己写了个简单的实现 XD。下面我就结合代码说一下~</p>
+
+<h4>垃圾邮件过滤的原理大概是这样的：</h4>
 
 <ol>
+<li><p>先通过8000封正常邮件和8000封垃圾邮件“训练”过滤器:      <br/>
+解析所有邮件，提取每一个词,然后，计算每个词语在正常邮件和垃圾邮件中的出
+现频率这里涉及到两个问题1）哪来那么多邮件2）怎么中文分词</p>
+
+<ol>
+<li>起初浪费我很多时间的就是这个邮件资料准备，还专门写了个邮件下载脚本，
+可惜我的gmail里只有1000多封邮件，根本不够，最后还是靠Google，不过还
+真找到了一份05年的邮件史料, 项目文件中的data.rar文件就是，如果想运
+行本程序的话，需要先把data.rar解压到当前文件夹.如果想看下载自己邮箱
+里邮件的那个脚本，可以到项目主页里去找mailDownload.py文件~</li>
+<li><p>提取邮件中的汉语词汇，这就涉及到中文分词了，我只是给出了一种最易实现
+的中文分词方式，基于字典的单词查找：先将中文文本切成最小的单位汉字，
+再从词典里找词，将这些字按照最左最长原则，合并为以词为单位的集合。
+也就是说把邮件内容先分成单个的汉字（英文这时候就已经是整词了），再在
+字典里找最长匹配的。分词的代码如下：</p>
+
+<pre><code>def init_wordslist(self, fn=r"./words.txt"):
+    '''
+    读入字典，默认是当前目录的words.txt，也可自己传入位置参数
+    '''
+    f = open(fn)
+    lines = sorted(f.readlines())
+    f.close()
+    return lines
+
+#字典树原理可以看这里
+#http://my.oschina.net/u/158589/blog/61037
+def words_2_trie(self, wordslist):
+    '''
+    将单词表存入字典树
+    '''
+    d = {}
+    for word in wordslist:
+        ref = d
+        chars = self.regex.findall(word)
+        for char in chars:
+            ref[char] = ref.has_key(char) and ref[char] or {}
+            ref = ref[char]
+
+    return d
+
+def search_in_trie(self, chars, trie, res):
+    '''
+    逐字检索已经拆分为英文单词或单个汉字的邮件并在字典中查找最长匹配的词语
+    '''
+    ref = trie
+    index = 0
+    temp = ''
+    count = 0
+    for char in chars:
+        if ref.has_key(char):
+            temp += char
+            count += 1
+            ref = ref[char]
+            index += 1
+        else:
+            if temp != 0:                                #表示上一个单词已经分离出
+                res.append(temp)
+                temp = ''
+                count = 0
+            if index == 0:                               #字典中没有以上一个char结尾的单词
+                index = 1
+                res.append(char)
+            try:
+                chars = chars[index:]
+                self.search_in_trie(chars, trie, res)
+            except:
+                pass
+            break
+    if count != 0:                                       #最后一个词
+        res.append(temp);
+</code></pre>
+
+<p>不过你也可以使用结巴分词这个第三方扩展库，也是用来中文分词的，我的代码里提供了接口，可以调用splitByjieba
+来分割这些邮件。</p>
+
+<p>做完这些后就要对信息进行汇总了，即统计邮件中每个词汇分别在垃圾邮件和正常邮件中出现的频率</p>
+
+<pre><code>self.regex = re.compile(r"[\w-]+|[\x80-\xff]{3}")   
+self.wordlist = {'normal': [], 'trash': []}
+self.maildic = {'normal': {}, 'trash': {}}
+self.ratio = {}
+self.normalnum = 0                                          #正常邮件和垃圾邮件数目
+self.trashnum = 0                                           #初始为史料库中的统计
+                                                            #随着接收邮件的判断，其值还会变动   
+</code></pre>
+
+<p>这里设置几个属性 wordlist记录所有邮件的分词结果，按noraml trash分类.<br/>
+maildic记录各个邮件的具体分词结果maildic[normal|trash][filename]为该邮件的分词结果集.<br/>
+ratio记录词汇在正常邮件和垃圾邮件分别出现的概率:</p>
+
+<pre><code>word: [ratio_of_noraml, ratio_of_trash]
+</code></pre>
+
+<blockquote><p>我们假定&#8221;sex&#8221;这个词，在4000封垃圾邮件中，有200封包含这个词，那么它的出现频率 <br/>
+就是5%；而在4000封正常邮件中，只有2封包含这个词，那么出现频率就是0.05%,如果某<br/>
+个词只出现在垃圾邮件中，就假定，它在正常邮件的出现频率是1%，反之亦然。 <br/>
+随着邮件数量的增加，计算结果会自动调整</p></blockquote>
+
+<p>代码如下：</p>
+
+<pre><code>def getNTRatio(self, typ):
+    '''
+    分别计算正常(Normal)邮件和垃圾(Trash)邮件中某词在其邮件总数的比例
+    typ:['normal', 'trash']
+    '''
+    counter = collections.Counter(self.wordlist[typ])
+    dic = collections.defaultdict(list)
+    for word in list(counter):
+        dic[word].append(counter[word])
+    mailcount = len(self.maildic[typ])
+    if typ == 'normal':
+        self.normalnum = mailcount
+    elif typ == 'trash':
+        self.trashnum = mailcount
+    for key in dic:
+        dic[key][0] = dic[key][0] * 1.0 / mailcount
+    return dic
+
+def getRatio(self):
+    '''
+    计算出所有邮件中包含某个词的比例(比如说10封邮件中有5封包含'我们'这个词，
+    那么'我们'这个词出现的频率就是50%，这个词来自所有邮件的分词结果)
+    '''
+    dic_normal_ratio = self.getNTRatio('normal')                        #单词在正常邮件中出现的概率
+    dic_trash_ratio = self.getNTRatio('trash')                          #单词在垃圾邮件中出现的概率
+    dic_ratio = dic_normal_ratio
+    for key in dic_trash_ratio:
+        if key in dic_ratio:
+            dic_ratio[key].append(dic_trash_ratio[key][0])
+        else:
+            dic_ratio[key].append(0.01)                                 #若某单词只出现在正常邮件或垃圾邮件中
+            dic_ratio[key].append(dic_trash_ratio[key][0])              #那么我们假定它在没出现类型中的概率为0.01
+    for key in dic_ratio:
+        if len(dic_ratio[key]) == 1:
+            dic_ratio[key].append(0.01)
+    return dic_ratio        
+</code></pre></li>
+</ol>
+</li>
 <li><p>当收到一封未知邮件时，在不知道的前提下，我们假定它是垃圾邮件和正常邮件的概率各
 为50%，p(s) = p(n) = 50%</p></li>
 <li><p>解析该邮件，提取每个词，计算该词的p(s|w)，也就是受该词影响，该邮件是垃圾邮件的概率</p>
@@ -33,7 +181,9 @@
 <pre><code>             p(sw)             p(w|s)p(s)
  p(s|w) = -----------  =   ----------------------
              p(w)        p(s)p(w|s) + p(n)p(w|n)
-</code></pre></li>
+</code></pre>
+
+<p> 此处的解析邮件还是类似于前面的邮件分词，对应实现是splitsingle()</p></li>
 <li><p>提取该邮件中p(s|w)最高的15个词，计算联合概率。</p>
 
 <pre><code>             p(s|w1)p(s|w2)...p(s|w15)
@@ -47,29 +197,118 @@
 </ol>
 
 
+<p>上面这几部运算都在analysisEmail.py中的judge函数中：</p>
+
+<pre><code>#init是splitEmail对象, trie为先前建立的字典树,email为新接收到的email
+def judge(self, init, trie, email):
+    res = init.splitsingle(trie, email)                  #res是分词结果，为list
+    for i in [';', '', ' ', ':', '.', '。', '：', '，', ' ', '!', '（', '）', '(', ')','！','、']:
+        if i in res:
+            res.remove(i)                                #剔除标点字符
+    ratio_of_words = []                                  #记录邮件中每个词在垃圾邮件史料库(init.ratio[key][1])中出现的概率    
+    for word in res:
+        if word in init.ratio:
+            ratio_of_words.append((word, init.ratio[word][1]))                   #添加(word, ratio)元祖
+        else:
+            init.ratio[word] = [0.6, 0.4]                #如果邮件中的词是第一次出现，那么就假定
+                                                         #p(s|w)=0.4    
+        ratio_of_words.append((word, 0.4))
+    ratio_of_words = sorted(ratio_of_words, key = lambda x:x[1], reverse=True)[:15]
+    P = 1.0 
+    rest_P = 1.0
+    for word in ratio_of_words:
+        try:
+            print word[0].decode('utf-8'), word[1]
+        except:
+            print word[0], word[1]
+        P *= word[1]
+        rest_P = rest_P * (1.0 - word[1])
+
+    trash_p = P / (P + rest_P)
+    typ = ''
+    if trash_p &gt; 0.9:
+        typ = 'trash' 
+    else:
+        typ = 'normal'
+    init.flush(typ, res)
+    return trash_p  
+</code></pre>
+
 <blockquote><p>注:如果新收到的邮件中有的词在史料库中还没出现过，就假定p(s|w) = 0.4</p></blockquote>
 
-<h3>使用</h3>
+<p>下面通过简单地socket通信模拟邮件收发<br/>
+1.server端：</p>
 
-<ol>
-<li>解压data.rar到当前文件夹</li>
-<li><p>启动一个终端，模拟邮件服务器</p>
+<pre><code># -*- coding: utf-8 -*-
+import socket
+import analysisEmail
+import splitEmail
 
-<pre><code> cd mailFilter
- python server.py
-</code></pre></li>
-<li><p>等到出现 &#8220;Waiting for clients&#8230;&#8221;，启动另一终端，模拟邮件发送端</p>
+if __name__ == '__main__':
+    #加载历史邮件资料库，即建立判断条件
+    init = splitEmail.SplitEmail()
+    words = init.init_wordslist()
+    trie = init.words_2_trie(words)
+    init.split(trie, ['./data/'])
+    init.ratio = init.getRatio()
+    #for key in dic_of_ratio:
+    #    print key, dic_of_ratio[key]
+    ####################################################################
 
-<pre><code> cd mailFilter
- python client.py emaillocation
-</code></pre></li>
-</ol>
+    host = ''           
+    port = 8888
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((host, port))
+    s.listen(5)
+    while True:
+        print "Waiting for clients..."
+        conn, addr = s.accept()
+        print 'Connected by', addr
+        msg = ""
+        while True:
+            data = conn.recv(1024)
+            if not len(data):
+                break
+            msg += data
+        conn.close()
+        P = analysisEmail.JudgeMail().judge(init, trie, msg)
+        print "P(spam) = ", P
+</code></pre>
 
+<p>2.client:</p>
 
-<h3>参考资料</h3>
+<pre><code># -*- coding: utf-8 -*-
+import socket
+import sys
+
+if __name__ == '__main__':
+    host = 'localhost'
+    port = 8888
+    try:
+        fi = str(sys.argv[1])
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        msg = open(fi).read()
+        s.connect((host, port))
+        s.sendall(msg)
+        s.close()       
+    except:
+        print "error: Input the email location"
+</code></pre>
+
+<p>好了，说了这么多有点乱，咱们从server启动到接收到client发来邮件，判断是否为垃圾邮件整个过程走一遍</p>
+
+<p>server端运行，首先建立splitemail对象，然后调用init_wordlist()加载字典，之后调用words_2_trie()将<br/>
+字典转换为字典树，再之后将史料库中的邮件分词，统计各个单词在正常和垃圾邮件中出现的概率。
+client发来邮件，server接收后按2~4步(也就是judge函数实现)来判断其是否为垃圾邮件。</p>
+
+<p>具体运行方法可看<a href="http://github.com/lvwangbeta/mailFilter.git">mailFilter</a>的readme</p>
+
+<h4>参考资料：</h4>
 
 <p><a href="http://www.ruanyifeng.com/blog/2011/08/bayesian_inference_part_two.html">http://www.ruanyifeng.com/blog/2011/08/bayesian_inference_part_two.html</a><br/>
-<a href="http://en.wikipedia.org/wiki/Bayesian_spam_filtering">http://en.wikipedia.org/wiki/Bayesian_spam_filtering</a></p>
+<a href="http://en.wikipedia.org/wiki/Bayesian_spam_filtering">http://en.wikipedia.org/wiki/Bayesian_spam_filtering</a><br/>
+<a href="http://github.com/zhasm/simpleNLP">http://github.com/zhasm/simpleNLP</a><br/>
+<a href="http://en.wikipedia.org/wiki/Bayesian_spam_filtering#History">http://en.wikipedia.org/wiki/Bayesian_spam_filtering#History</a></p>
 ]]></content>
   </entry>
   

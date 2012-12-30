@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Nerd's Blog</title>
+  <title>垃圾邮件过滤器 Python简单实现 - Nerd's Blog</title>
   <meta name="author" content="lvwang">
 
   
@@ -19,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://lvwangbeta.github.com/">
+  <link rel="canonical" href="http://lvwangbeta.github.com/blog/2012/12/30/mailfilter/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -63,15 +63,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/12/30/mailfilter/">垃圾邮件过滤器 Python简单实现</a></h1>
+      <h1 class="entry-title">垃圾邮件过滤器 Python简单实现</h1>
     
     
       <p class="meta">
@@ -89,14 +86,14 @@
 
 <time datetime="2012-12-30T23:17:00+08:00" pubdate data-updated="true">Dec 30<span>th</span>, 2012</time>
         
-         | <a href="/blog/2012/12/30/mailfilter/#disqus_thread">Comments</a>
+         | <a href="#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>  前一段时间用Python写了一个简单的垃圾邮件过滤器，感觉还蛮有意思的，顺便学习一点Python今天做了一点改进,
+<div class="entry-content"><p>  前一段时间用Python写了一个简单的垃圾邮件过滤器，感觉还蛮有意思的，顺便学习一点Python今天做了一点改进,
 刚刚升级到1.2版本。项目地址在<a href="http://github.com/lvwangbeta/mailFilter.git">mailFilter</a> http://github.com/lvwangbeta/mailFilter.git。</p>
 
 <p>我想趁2012年还没结束，而且也快考试啦，发篇博文简单介绍一下，主要用到的知识还是 list
@@ -388,22 +385,16 @@ client发来邮件，server接收后按2~4步(也就是judge函数实现)来判�
 <a href="http://github.com/zhasm/simpleNLP">http://github.com/zhasm/simpleNLP</a><br/>
 <a href="http://en.wikipedia.org/wiki/Bayesian_spam_filtering#History">http://en.wikipedia.org/wiki/Bayesian_spam_filtering#History</a></p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/12/01/my-first-post/">My First Post</a></h1>
-    
-    
-      <p class="meta">
-        
+  
+
+<span class="byline author vcard">Posted by <span class="fn">lvwang</span></span>
+
+      
 
 
 
@@ -415,29 +406,39 @@ client发来邮件，server接收后按2~4步(也就是judge函数实现)来判�
   
 
 
-<time datetime="2012-12-01T23:39:00+08:00" pubdate data-updated="true">Dec 1<span>st</span>, 2012</time>
-        
-         | <a href="/blog/2012/12/01/my-first-post/#disqus_thread">Comments</a>
-        
-      </p>
+<time datetime="2012-12-30T23:17:00+08:00" pubdate data-updated="true">Dec 30<span>th</span>, 2012</time>
+      
+
+
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><p>hello world</p>
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://lvwangbeta.github.com/blog/2012/12/30/mailfilter/" data-via="" data-counturl="http://lvwangbeta.github.com/blog/2012/12/30/mailfilter/" >Tweet</a>
+  
+  
+  
+  
 </div>
-  
-  
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/12/01/my-first-post/" title="Previous Post: My first post">&laquo; My first post</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 </div>
+  </section>
+
+</div>
+
 <aside class="sidebar">
   
     <section>
@@ -463,6 +464,7 @@ client发来邮件，server接收后按2~4步(也就是judge函数实现)来判�
   
 </aside>
 
+
     </div>
   </div>
   <footer role="contentinfo"><p>
@@ -477,7 +479,10 @@ client发来邮件，server接收后按2~4步(也就是judge函数实现)来判�
       var disqus_shortname = 'lvwangbeta';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://lvwangbeta.github.com/blog/2012/12/30/mailfilter/';
+        var disqus_url = 'http://lvwangbeta.github.com/blog/2012/12/30/mailfilter/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
